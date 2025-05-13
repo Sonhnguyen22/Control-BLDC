@@ -115,8 +115,8 @@ void Init_TIM(void){
 	TIM1->CR1 &= ~(3 << TIM_CR1_CMS_Pos);    			// Xóa bit CMS
 	TIM1->CR1 |=  (2 << TIM_CR1_CMS_Pos);     		// Chon Center-aligned mode 3
 	TIM1->CR1 |= TIM_CR1_ARPE | TIM_CR1_URS |TIM_CR1_CEN;  // Reload ARR, EN counter tim1 
-//	TIM1->DIER |= (1<<0);
-//	NVIC->ISER[0] |= (1<<25);
+	TIM1->DIER |= (1<<0);
+	NVIC->ISER[0] |= (1<<25);
 
 //========= tim2 interrupt========
 //	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
@@ -140,7 +140,7 @@ uint16_t angle_index;      // index tu 0–1023
 uint16_t ccr1, ccr2, ccr3;
 //uint8_t current_sector;    // gia tri tu 0–5
 
-uint64_t gear_counter = 0;       // Bien tich luy banh rang lon (64-bit)
+       // Bien tich luy banh rang lon (64-bit)
 #define GEAR_TEETH (1 << 30)     // So rang banh lon = 2^30
 #define LUT_SIZE 6144            // Tong diem LUT (6 sectors)
 uint16_t check1;
@@ -152,28 +152,17 @@ void init_sin_table(void) {
 	}
 }
 //
-void update_sector_and_index(float Theta){
-//	if (Theta >= 2.0f * M_PI) Theta = 0;
-//	current_sector = (uint8_t)(Theta / (M_PI / 3.0f));  // moi sector chiem 60 do
-//	float phi = Theta - current_sector * (M_PI / 3.0f); // goc noi bo trong sector
-//	angle_index = (uint16_t)(phi * 3069.0f / M_PI);     // scale theo cong thuc bang
-}
-//
 uint16_t Update_Angle(float target_freq) {
+	static uint64_t gear_counter = 0;
 	// 1. Tinh so rang can dich tren banh lon
 	// Cong thuc: j = (target_freq * LUT_SIZE / PWM_FREQ) * GEAR_TEETH
 	uint64_t j = (uint64_t)((target_freq * GEAR_TEETH * LUT_SIZE) / 5000.0f);
-
-	
 	// 2. Tich luy vao gear_couter (banh lon quay)
 	gear_counter += j;
-	
 	// 3. Tinh so rang dich thuc te tren banh nho (k = j / GEAR_TEETH)
-	uint64_t k = gear_counter >> 30;  // D?ch 30 bit = chia cho 2^30
-	
+	uint64_t k = gear_counter >> 30;  // Dich 30 bit = chia cho 2^30
 //	// 4. Giu lai phan du cho lan sau
 //	gear_counter &= (GEAR_TEETH - 1); // Giu 30 bit thap
-	
 	// 5. Lay index trong LUT (0-6143)
 	uint16_t lut_index = k % LUT_SIZE;
 	
@@ -183,60 +172,27 @@ uint16_t Update_Angle(float target_freq) {
 //
 void SVM_Calc(uint16_t V_index, float frequency, uint16_t *ccr1, uint16_t *ccr2, uint16_t *ccr3) {
 
-	// 1. C?p nh?t góc quay dùng Coaxial Gears
-	uint16_t idx = Update_Angle(frequency);
-	
-	// 2. Xác d?nh sector và index trong sector
-	uint8_t sector = idx / 1024;       // 6 sectors (0-5)
-	uint16_t sector_idx = idx % 1024;  // 1024 diem/sector
+	// 1. Cap nhat goc quay dung Coaxial Gears
+	uint16_t Angle = Update_Angle(frequency);
+	// 2. Xac dinh sector va angle_index trong Angle
+	uint8_t sector = Angle / 1024;       // 6 sectors (0-5)
+	uint16_t angle_idx = Angle % 1024;  // 1024 diem/sector
 	
 	uint32_t m_i = V_index;
-	uint32_t sin_phi = s_lookup[sector_idx];
-	uint32_t sin_60_minus_phi = s_lookup[1023 - sector_idx];
+	uint32_t sin_phi = s_lookup[angle_idx];
+	uint32_t sin_60_minus_phi = s_lookup[1023 - angle_idx];
 
 	uint32_t Tccw = (m_i * sin_60_minus_phi) >> 19; // chia 524288
 	uint32_t Tcw = (m_i * sin_phi) >> 19;
 	uint32_t Tz = (PWM_PERIOD - Tcw - Tccw) >> 1;
 
-//  switch (sector) {
-//		case 0: *ccr1 = Tz; *ccr2 = Tz + Tcw; *ccr3 = PWM_PERIOD - Tz; break;
-//		case 1: *ccr1 = Tz + Tccw; *ccr2 = Tz; *ccr3 = PWM_PERIOD - Tz; break;
-//		case 2: *ccr1 = PWM_PERIOD - Tz; *ccr2 = Tz; *ccr3 = Tz + Tcw; break;
-//		case 3: *ccr1 = PWM_PERIOD - Tz; *ccr2 = Tz + Tccw; *ccr3 = Tz; break;
-//		case 4: *ccr1 = Tz + Tcw; *ccr2 = PWM_PERIOD - Tz; *ccr3 = Tz; break;
-//		case 5: *ccr1 = Tz; *ccr2 = PWM_PERIOD - Tz; *ccr3 = Tz + Tccw; break;
-//	}
 	switch (sector) {
-		case 0:
-			*ccr1 = (Tccw + Tcw + Tz);
-			*ccr2 = (Tcw + Tz);
-			*ccr3 = (Tz);
-			break;
-		case 1:
-			*ccr1 = (Tccw +  Tz);
-			*ccr2 = (Tccw + Tcw + Tz);
-			*ccr3 = (Tz);
-			break;
-		case 2:
-			*ccr1 = (Tz);
-			*ccr2 = (Tccw + Tcw + Tz);
-			*ccr3 = (Tcw + Tz);
-			break;
-		case 3:
-			*ccr1 = (Tz);
-			*ccr2 = (Tccw + Tz);
-		 	*ccr3 = (Tccw + Tcw + Tz);
-			break;
-		case 4:
-			*ccr1 = (Tcw + Tz);
-			*ccr2 = (Tz);
-			*ccr3 = (Tccw + Tcw + Tz);
-			break;
-		case 5:
-			*ccr1 = (Tccw + Tcw + Tz);
-			*ccr2 = (Tz);
-			*ccr3 = (Tccw + Tz);
-			break;
+		case 0: *ccr1 = (Tccw + Tcw + Tz); 	*ccr2 = (Tcw + Tz); 				*ccr3 = (Tz); 							break;
+		case 1: *ccr1 = (Tccw +  Tz); 			*ccr2 = (Tccw + Tcw + Tz); 	*ccr3 = (Tz); 							break;
+		case 2: *ccr1 = (Tz); 							*ccr2 = (Tccw + Tcw + Tz); 	*ccr3 = (Tcw + Tz); 				break;
+		case 3: *ccr1 = (Tz); 							*ccr2 = (Tccw + Tz); 				*ccr3 = (Tccw + Tcw + Tz); 	break;
+		case 4: *ccr1 = (Tcw + Tz); 				*ccr2 = (Tz); 							*ccr3 = (Tccw + Tcw + Tz); 	break;
+		case 5: *ccr1 = (Tccw + Tcw + Tz); 	*ccr2 = (Tz); 							*ccr3 = (Tccw + Tz); 				break;
 	}
 }
 
@@ -244,9 +200,7 @@ void SVM_Calc(uint16_t V_index, float frequency, uint16_t *ccr1, uint16_t *ccr2,
 
 
 uint16_t V_F = 5000;
-float tanso= 1.0f;
-//
-
+float tanso= 4.0f;
 
 void TIM1_UP_IRQHandler(void)
 {
@@ -255,47 +209,20 @@ void TIM1_UP_IRQHandler(void)
 	TIM1->CCR1 = ccr1;
 	TIM1->CCR2 = ccr2;
 	TIM1->CCR3 = ccr3;
-//	check1 = Update_Angle(50.0f);
+
 }
-
-
-
 
 int main(void)
 {
 
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  /* USER CODE BEGIN 2 */
 	Init_TIM();
-
-  /* USER CODE END 2 */
-
 	init_sin_table();
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
 
 	while (1) {
-		GPIOA->ODR ^= (1<<11);
-		SVM_Calc(5000, 1.7, &ccr1, &ccr2, &ccr3); 
-		TIM1->CCR1 = ccr1;
-		TIM1->CCR2 = ccr2;
-		TIM1->CCR3 = ccr3;
-		GPIOA->ODR ^= (1<<11);
-		HAL_Delay(100);
+
 	}
 
   /* USER CODE END 3 */
