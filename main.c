@@ -19,18 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "math.h"
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
 #define A_En   1
 #define B_En	 2
 #define C_En   3
@@ -40,29 +29,8 @@
 
 
 
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-/* USER CODE BEGIN PFP */
-
-
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
 
 
 void TIM2_IRQHandler(){
@@ -73,15 +41,9 @@ void TIM2_IRQHandler(){
 
 
 
-/* USER CODE END 0 */
-//uint32_t j;
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
-//
-#define PWM_PERIOD 7200
-#define M_PI 3.141592653f
+#define PWM_PERIOD  7200
+#define M_PI        3.141592653f
+#define Sin_Num     4096
 
 void Init_TIM(void){
 	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN;
@@ -112,7 +74,7 @@ void Init_TIM(void){
 	TIM1->SMCR |= (14<<8);
 	TIM1->EGR |= TIM_EGR_UG; 											// bit UG	
 	TIM1->BDTR |= TIM_BDTR_MOE; 									// bit MOE
-	TIM1->CR1 &= ~(3 << TIM_CR1_CMS_Pos);    			// Xóa bit CMS
+	TIM1->CR1 &= ~(3 << TIM_CR1_CMS_Pos);    			// X�a bit CMS
 	TIM1->CR1 |=  (2 << TIM_CR1_CMS_Pos);     		// Chon Center-aligned mode 3
 	TIM1->CR1 |= TIM_CR1_ARPE | TIM_CR1_URS |TIM_CR1_CEN;  // Reload ARR, EN counter tim1 
 	TIM1->DIER |= (1<<0);
@@ -134,26 +96,27 @@ void Init_TIM(void){
 //	NVIC->ISER[0] |= (1<<28);
 }
 //
-uint16_t s_lookup[1024];
+uint16_t s_lookup[Sin_Num];
+uint16_t ccr[3];
 uint16_t modulation_index; // gia tri tu 0-65535
-uint16_t angle_index;      // index tu 0–1023
+uint16_t angle_index;      // index tu 0-Sin_Num
 uint16_t ccr1, ccr2, ccr3;
-//uint8_t current_sector;    // gia tri tu 0–5
 
-       // Bien tich luy banh rang lon (64-bit)
+
+// Bien tich luy banh rang lon (64-bit)
 #define GEAR_TEETH (1 << 30)     // So rang banh lon = 2^30
-#define LUT_SIZE 6144            // Tong diem LUT (6 sectors)
+#define LUT_SIZE (6 * Sin_Num)   // Tong diem LUT (6 sectors)
 uint16_t check1;
 
 
 void init_sin_table(void) {
-	for (int i = 0; i < 1024; i++) {
-		s_lookup[i] = (uint16_t)(57600 * sinf((float)i * M_PI / 3069.0f)); // M_PI / (6 × 1024)
+	for (int i = 0; i < Sin_Num; i++) {
+		s_lookup[i] = (uint16_t)(57600 * sinf((float)i * M_PI / (float)(3*(Sin_Num - 1)))); // M_PI / (3 * (Sin_Num - 1))
 	}
 }
 //
+static uint64_t gear_counter = 0;
 uint16_t Update_Angle(float target_freq) {
-	static uint64_t gear_counter = 0;
 	// 1. Tinh so rang can dich tren banh lon
 	// Cong thuc: j = (target_freq * LUT_SIZE / PWM_FREQ) * GEAR_TEETH
 	uint64_t j = (uint64_t)((target_freq * GEAR_TEETH * LUT_SIZE) / 5000.0f);
@@ -161,54 +124,51 @@ uint16_t Update_Angle(float target_freq) {
 	gear_counter += j;
 	// 3. Tinh so rang dich thuc te tren banh nho (k = j / GEAR_TEETH)
 	uint64_t k = gear_counter >> 30;  // Dich 30 bit = chia cho 2^30
-//	// 4. Giu lai phan du cho lan sau
-//	gear_counter &= (GEAR_TEETH - 1); // Giu 30 bit thap
-	// 5. Lay index trong LUT (0-6143)
+	// 4. Lay index trong LUT (0-6143)
 	uint16_t lut_index = k % LUT_SIZE;
-	
+	//
 	return lut_index;
 }
 
 //
-void SVM_Calc(uint16_t V_index, float frequency, uint16_t *ccr1, uint16_t *ccr2, uint16_t *ccr3) {
-
+void SVM_Calc(uint16_t V_index, float frequency, uint16_t *ccr) {
 	// 1. Cap nhat goc quay dung Coaxial Gears
 	uint16_t Angle = Update_Angle(frequency);
 	// 2. Xac dinh sector va angle_index trong Angle
-	uint8_t sector = Angle / 1024;       // 6 sectors (0-5)
-	uint16_t angle_idx = Angle % 1024;  // 1024 diem/sector
+	uint8_t sector = Angle / Sin_Num;       // 6 sectors (0-5)
+	uint16_t angle_idx = Angle % Sin_Num;  	// 1024 diem/sector
 	
 	uint32_t m_i = V_index;
 	uint32_t sin_phi = s_lookup[angle_idx];
-	uint32_t sin_60_minus_phi = s_lookup[1023 - angle_idx];
+	uint32_t sin_60_minus_phi = s_lookup[Sin_Num -1 - angle_idx];
 
-	uint32_t Tccw = (m_i * sin_60_minus_phi) >> 19; // chia 524288
-	uint32_t Tcw = (m_i * sin_phi) >> 19;
-	uint32_t Tz = (PWM_PERIOD - Tcw - Tccw) >> 1;
+	uint16_t Tccw = (m_i * sin_60_minus_phi) >> 19; // chia 524288
+	uint16_t Tcw = (m_i * sin_phi) >> 19;
+	uint16_t Tz = (PWM_PERIOD - Tcw - Tccw) >> 1;
 
 	switch (sector) {
-		case 0: *ccr1 = (Tccw + Tcw + Tz); 	*ccr2 = (Tcw + Tz); 				*ccr3 = (Tz); 							break;
-		case 1: *ccr1 = (Tccw +  Tz); 			*ccr2 = (Tccw + Tcw + Tz); 	*ccr3 = (Tz); 							break;
-		case 2: *ccr1 = (Tz); 							*ccr2 = (Tccw + Tcw + Tz); 	*ccr3 = (Tcw + Tz); 				break;
-		case 3: *ccr1 = (Tz); 							*ccr2 = (Tccw + Tz); 				*ccr3 = (Tccw + Tcw + Tz); 	break;
-		case 4: *ccr1 = (Tcw + Tz); 				*ccr2 = (Tz); 							*ccr3 = (Tccw + Tcw + Tz); 	break;
-		case 5: *ccr1 = (Tccw + Tcw + Tz); 	*ccr2 = (Tz); 							*ccr3 = (Tccw + Tz); 				break;
+		case 0: ccr[0] = (Tccw + Tcw + Tz); ccr[1] = (Tcw + Tz); 				ccr[2] = (Tz); 							break;
+		case 1: ccr[0] = (Tccw +  Tz); 			ccr[1] = (Tccw + Tcw + Tz);	ccr[2] = (Tz); 							break;
+		case 2: ccr[0] = (Tz); 							ccr[1] = (Tccw + Tcw + Tz); ccr[2] = (Tcw + Tz); 				break;
+		case 3: ccr[0] = (Tz); 							ccr[1] = (Tccw + Tz); 			ccr[2] = (Tccw + Tcw + Tz); 	break;
+		case 4: ccr[0] = (Tcw + Tz); 				ccr[1] = (Tz); 							ccr[2] = (Tccw + Tcw + Tz); 	break;
+		case 5: ccr[0] = (Tccw + Tcw + Tz);	ccr[1] = (Tz); 							ccr[2] = (Tccw + Tz); 				break;
 	}
 }
 
 //
 
 
-uint16_t V_F = 5000;
-float tanso= 4.0f;
+uint16_t V_F = 10000;
+float tanso= 5.10f;
 
 void TIM1_UP_IRQHandler(void)
 {
   TIM1->SR &= ~TIM_SR_UIF;
-	SVM_Calc(V_F, tanso, &ccr1, &ccr2, &ccr3); 
-	TIM1->CCR1 = ccr1;
-	TIM1->CCR2 = ccr2;
-	TIM1->CCR3 = ccr3;
+	SVM_Calc(V_F, tanso, ccr); 
+	TIM1->CCR1 = ccr[0];
+	TIM1->CCR2 = ccr[1];
+	TIM1->CCR3 = ccr[2];
 
 }
 
