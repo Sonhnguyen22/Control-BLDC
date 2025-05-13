@@ -85,79 +85,79 @@ uint16_t MicroPWM[] = {};
 
 
 
-#define PWM_PERIOD 399  // Tuong ?ng v?i 20kHz cho Timer 72MHz
-#define SQRT3 1.73205080757f
-	float T0, T1, T2;
-
-float Ta, Tb, Tc;
-
-
-// Hàm tính toán SVM t? V_alpha, V_beta (chu?n hóa t? -1 d?n 1)
-void SVM_Generate(float V_alpha, float V_beta) {
-	
-
-	// Tính toán sector
-	float m = sqrtf(V_alpha * V_alpha + V_beta * V_beta);
-	if (m > 0.866f) m = 0.866f;
-	float angle = atan2f(V_beta, V_alpha);
-	if (angle < 0) angle += 2 * PI;
-
-	uint8_t sector = (uint8_t)(angle / Rad_60) + 1;
-
-	// Tính T1, T2 theo công thuc
-	
+////#define PWM_PERIOD 399  // Tuong ?ng v?i 20kHz cho Timer 72MHz
+//#define SQRT3 1.73205080757f
 //	float T0, T1, T2;
-	
 
-	float angle_sector = fmodf(angle, Rad_60);
-	T1 = m * sinf(Rad_60 - angle_sector) ;
-	T2 = m * sinf(angle_sector);
-	T0 = 1 - T1 - T2;
+//float Ta, Tb, Tc;
 
-	// Chu k? PWM chia d?u T0 và phân ph?i theo sector
-//	float Ta, Tb, Tc;
 
-	switch (sector) {
-		case 1:
-			Ta = (T1 + T2 + T0/2);
-			Tb = (T2 + T0/2);
-			Tc = (T0/2);
-			break;
-		case 2:
-			Ta = (T1 + T0/2);
-			Tb = (T1 + T2 + T0/2);
-			Tc = (T0/2);
-			break;
-		case 3:
-			Ta = (T0/2);
-			Tb = (T1 + T2 + T0/2);
-			Tc = (T2 + T0/2);
-			break;
-		case 4:
-			Ta = (T0/2);
-			Tb = (T1 + T0/2);
-			Tc = (T1 + T2 + T0/2);
-			break;
-		case 5:
-			Ta = (T2 + T0/2);
-			Tb = (T0/2);
-			Tc = (T1 + T2 + T0/2);
-			break;
-		case 6:
-			Ta = (T1 + T2 + T0/2);
-			Tb = (T0/2);
-			Tc = (T1 + T0/2);
-			break;
-	}
+//// Hàm tính toán SVM t? V_alpha, V_beta (chu?n hóa t? -1 d?n 1)
+//void SVM_Generate(float V_alpha, float V_beta) {
+//	
 
-}
+//	// Tính toán sector
+//	float m = sqrtf(V_alpha * V_alpha + V_beta * V_beta);
+//	if (m > 0.866f) m = 0.866f;
+//	float angle = atan2f(V_beta, V_alpha);
+//	if (angle < 0) angle += 2 * PI;
 
-//==================
-float Va, Vb, Vc, Vr = 3.0f, Vdc = 12.0f, Valpha, Vbeta, Alpha;
-uint8_t Sector;
-float Ua;
-float Ub;
-float Uc;
+//	uint8_t sector = (uint8_t)(angle / Rad_60) + 1;
+
+//	// Tính T1, T2 theo công thuc
+//	
+////	float T0, T1, T2;
+//	
+
+//	float angle_sector = fmodf(angle, Rad_60);
+//	T1 = m * sinf(Rad_60 - angle_sector) ;
+//	T2 = m * sinf(angle_sector);
+//	T0 = 1 - T1 - T2;
+
+//	// Chu k? PWM chia d?u T0 và phân ph?i theo sector
+////	float Ta, Tb, Tc;
+
+//	switch (sector) {
+//		case 1:
+//			Ta = (T1 + T2 + T0/2);
+//			Tb = (T2 + T0/2);
+//			Tc = (T0/2);
+//			break;
+//		case 2:
+//			Ta = (T1 + T0/2);
+//			Tb = (T1 + T2 + T0/2);
+//			Tc = (T0/2);
+//			break;
+//		case 3:
+//			Ta = (T0/2);
+//			Tb = (T1 + T2 + T0/2);
+//			Tc = (T2 + T0/2);
+//			break;
+//		case 4:
+//			Ta = (T0/2);
+//			Tb = (T1 + T0/2);
+//			Tc = (T1 + T2 + T0/2);
+//			break;
+//		case 5:
+//			Ta = (T2 + T0/2);
+//			Tb = (T0/2);
+//			Tc = (T1 + T2 + T0/2);
+//			break;
+//		case 6:
+//			Ta = (T1 + T2 + T0/2);
+//			Tb = (T0/2);
+//			Tc = (T1 + T0/2);
+//			break;
+//	}
+
+//}
+
+////==================
+//float Va, Vb, Vc, Vr = 3.0f, Vdc = 12.0f, Valpha, Vbeta, Alpha;
+//uint8_t Sector;
+//float Ua;
+//float Ub;
+//float Uc;
 float Sintable[3601] = {
 0
 ,0.001745328
@@ -3764,287 +3764,336 @@ float Sintable[3601] = {
 	
 };
 
-#define SQRT3 								1.73205080757f
-#define SQRT3_2   						0.86602540378f
-#define INV_SQRT3ON2  				1.15470053837f
-#define PI 			  						3.14159265359f
-#define PIPOW2 								9.86960440108f
-#define TWOPI									6.28318530717f
-#define PION3 								1.04719755119f
-#define INV_PION3 						0.95492965855f
-#define DegOnRad 							57.2957795130f
-#define RadOnDeg 							0.01745329252f
+//#define SQRT3 								1.73205080757f
+//#define SQRT3_2   						0.86602540378f
+//#define INV_SQRT3ON2  				1.15470053837f
+//#define PI 			  						3.14159265359f
+//#define PIPOW2 								9.86960440108f
+//#define TWOPI									6.28318530717f
+//#define PION3 								1.04719755119f
+//#define INV_PION3 						0.95492965855f
+//#define DegOnRad 							57.2957795130f
+//#define RadOnDeg 							0.01745329252f
 
-#define Deg2Rad(x) 						((x) * (RadOnDeg))
-#define Rad2Deg(x)						((x) * (DegOnRad))
+//#define Deg2Rad(x) 						((x) * (RadOnDeg))
+//#define Rad2Deg(x)						((x) * (DegOnRad))
 
-#include <stdint.h>
+//#include <stdint.h>
 
-// Ham tinh sin(x) bang Fixed-Point Q15
-// Dau vao: x la goc duoc chuyen doi thanh [0, 65535] tuong duong [0, 2p]
-// Dau ra: Gia tri sin(x) trong khoang [-32767, 32767] (dinh dang Q15)
-int16_t fast_sin_q15(uint16_t x) {
-    // Bang tra cuu (LUT) gom 17 gia tri sin mau
-    // Cac gia tri tuong ung voi cac goc chia deu tu 0 den p/2
-    static const int16_t sin_lut[17] = {
-																				0,      // sin(0)
-																				3212,   // sin(p/32)
-																				6393,   // sin(2p/32)
-																				9512,   // ...
-																				12540,
-																				15446,
-																				18204,
-																				20788, 
-																				23170,
-																				25330,
-																				27246,
-																				28898,
-																				30274,
-																				31357,
-																				32138,
-																				32610,
-																				32767   // sin(p/2) = 1.0 trong Q15
-    };
-    
-    // Buoc 1: Xac dinh vi tri trong bang LUT
-    // Dich phai 12 bit tuong duong chia cho 4096 (65536/16 mau)
-    uint8_t idx = x >> 12;          // Chi so trong bang LUT (0-15)
-    
-    // Buoc 2: Lay phan du de noi suy
-    uint16_t frac = x & 0x0FFF;     // 12 bit cuoi = phan thap tu (0-4095)
-    
-    // Buoc 3: Noi suy tuyen tinh giua 2 mau gan nhat
-    int32_t y0 = sin_lut[idx];      // Gia tri mau duoi
-    int32_t y1 = sin_lut[idx + 1];  // Gia tri mau tren
-    
-    // Tinh toan gia tri noi suy
-    return (int16_t)(y0 + ((y1 - y0) * frac) / 4096);
-}
-float SinD(float Deg){
-	if (Deg < 0.0f) {
-			Deg = -Deg;
-		}
-	float a = Deg*(180.0f - Deg);
-	return (float)((4*a)/(40500-a));
-}
+//// Ham tinh sin(x) bang Fixed-Point Q15
+//// Dau vao: x la goc duoc chuyen doi thanh [0, 65535] tuong duong [0, 2p]
+//// Dau ra: Gia tri sin(x) trong khoang [-32767, 32767] (dinh dang Q15)
+//int16_t fast_sin_q15(uint16_t x) {
+//    // Bang tra cuu (LUT) gom 17 gia tri sin mau
+//    // Cac gia tri tuong ung voi cac goc chia deu tu 0 den p/2
+//    static const int16_t sin_lut[17] = {
+//																				0,      // sin(0)
+//																				3212,   // sin(p/32)
+//																				6393,   // sin(2p/32)
+//																				9512,   // ...
+//																				12540,
+//																				15446,
+//																				18204,
+//																				20788, 
+//																				23170,
+//																				25330,
+//																				27246,
+//																				28898,
+//																				30274,
+//																				31357,
+//																				32138,
+//																				32610,
+//																				32767   // sin(p/2) = 1.0 trong Q15
+//    };
+//    
+//    // Buoc 1: Xac dinh vi tri trong bang LUT
+//    // Dich phai 12 bit tuong duong chia cho 4096 (65536/16 mau)
+//    uint8_t idx = x >> 12;          // Chi so trong bang LUT (0-15)
+//    
+//    // Buoc 2: Lay phan du de noi suy
+//    uint16_t frac = x & 0x0FFF;     // 12 bit cuoi = phan thap tu (0-4095)
+//    
+//    // Buoc 3: Noi suy tuyen tinh giua 2 mau gan nhat
+//    int32_t y0 = sin_lut[idx];      // Gia tri mau duoi
+//    int32_t y1 = sin_lut[idx + 1];  // Gia tri mau tren
+//    
+//    // Tinh toan gia tri noi suy
+//    return (int16_t)(y0 + ((y1 - y0) * frac) / 4096);
+//}
+//float SinD(float Deg){
+//	if (Deg < 0.0f) {
+//			Deg = -Deg;
+//		}
+//	float a = Deg*(180.0f - Deg);
+//	return (float)((4*a)/(40500-a));
+//}
 
-float SinR(float Rad){
-	if(Rad < 0.0f){
-		Rad = -Rad;
-	}
-	float a = 4*Rad*(PI - Rad);
-	return ((4*a)/ (5*PIPOW2 - a));
-}
-
-
-uint8_t Get_Sector(float Valpha, float Vbeta) {
-	float i = -0.5f * Vbeta + SQRT3_2 * Valpha;
-	float j = Vbeta;
-	float k = -0.5f * Vbeta - SQRT3_2 * Valpha;
-
-	uint8_t si = (i > 0) ? 1 : 0;
-	uint8_t sj = (j > 0) ? 1 : 0;
-	uint8_t sk = (k > 0) ? 1 : 0;
-
-	uint8_t sector = (sk << 2) | (sj << 1) | si;
-
-	switch (sector) {
-		case 3:  return 1;  
-		case 2:  return 2;  
-		case 6:  return 3;  
-		case 4:  return 4;  
-		case 5:  return 5;  
-		case 1:  return 6;  
-		default: return 0;  
-	}
-}
-void SVM_Generate2(float V_alpha, float V_beta) {
-	
-	Alpha = atan2f(V_alpha, V_beta);
-	
-	while (Alpha < 0) Alpha += TWOPI;
-	uint8_t s = (uint8_t)(Alpha * INV_PION3);
-	Alpha = Alpha - s * PION3;
-	Sector = s + 1;
-	
-//	T1 = (Vr/Vdc)*INV_SQRT3ON2*sinf(PION3 - Alpha);
-//	T2 = (Vr/Vdc)*INV_SQRT3ON2*sinf(Alpha);
-	
-	T1 = (Vr/Vdc) * SinR(PION3 - Alpha) * INV_SQRT3ON2;
-	T2 = (Vr/Vdc) * SinR(Alpha) * INV_SQRT3ON2;
-	T0 = (1 - T1 - T2)*0.5f;
-	
-	switch (Sector) {
-		case 1:
-			Ta = (T1 + T2 + T0);
-			Tb = (T2 + T0);
-			Tc = (T0);
-			break;
-		case 2:
-			Ta = (T1 +  T0);
-			Tb = (T1 + T2 + T0);
-			Tc = (T0);
-			break;
-		case 3:
-			Ta = (T0);
-			Tb = (T1 + T2 + T0);
-			Tc = (T2 + T0);
-			break;
-		case 4:
-			Ta = (T0);
-			Tb = (T1 + T0);
-			Tc = (T1 + T2 + T0);
-			break;
-		case 5:
-			Ta = (T2 + T0);
-			Tb = (T0);
-			Tc = (T1 + T2 + T0);
-			break;
-		case 6:
-			Ta = (T1 + T2 + T0);
-			Tb = (T0);
-			Tc = (T1 + T0);
-			break;
-	}
-	Ua = Ta*1599;
-	Ub = Tb*1599;
-	Uc = Tc*1599;
-		
-
-	TIM1->CCR1 = Ta*1599;
-	TIM1->CCR2 = Tb*1599;
-	TIM1->CCR3 = Tc*1599;
-	
-}
+//float SinR(float Rad){
+//	if(Rad < 0.0f){
+//		Rad = -Rad;
+//	}
+//	float a = 4*Rad*(PI - Rad);
+//	return ((4*a)/ (5*PIPOW2 - a));
+//}
 
 
+//uint8_t Get_Sector(float Valpha, float Vbeta) {
+//	float i = -0.5f * Vbeta + SQRT3_2 * Valpha;
+//	float j = Vbeta;
+//	float k = -0.5f * Vbeta - SQRT3_2 * Valpha;
 
+//	uint8_t si = (i > 0) ? 1 : 0;
+//	uint8_t sj = (j > 0) ? 1 : 0;
+//	uint8_t sk = (k > 0) ? 1 : 0;
 
-void tinh_Valpha_Vbeta_Alpha(){
-	Valpha = Va - Vb/2.0f - Vc/2.0f;
-	Vbeta = (Vb - Vc)*SQRT3/2.0f;
-	
-	Vr = sqrtf(Valpha*Valpha + Vbeta*Vbeta);
-	Alpha = atan2f(Vbeta, Valpha);
-	
-}
+//	uint8_t sector = (sk << 2) | (sj << 1) | si;
 
-void FSector(){
-	if(Alpha > 0 & Alpha <= PI/3){
-		Sector = 1;
-		
-		T1 = (Vr/Vdc)*sinf(PI/3 - Alpha)*2/SQRT3;
-		T2 = (Vr/Vdc)*sinf(Alpha)*2/SQRT3;
-		T0 = 1 - T1 - T2;
-		
-	}
-	else if(Alpha > PI/3 & Alpha <= 2*PI/3){
-		Sector = 2;
-		T1 = (Vr/Vdc)*sinf(2*PI/3 - Alpha)*2/SQRT3;
-		T2 = (Vr/Vdc)*sinf(Alpha)*2/SQRT3;
-		T0 = 1 - T1 - T2;
-	}
-	else if(Alpha > 2*PI/3 & Alpha <= PI){
-		Sector = 3;
-	}
-	else if(Alpha > -PI & Alpha <= -2*PI/3){
-		Sector = 4;
-	}
-	else if(Alpha > -2*PI/3 & Alpha <= -PI/3){
-		Sector = 5;
-	}
-	else{
-		Sector = 6;
-	}
-}
+//	switch (sector) {
+//		case 3:  return 1;  
+//		case 2:  return 2;  
+//		case 6:  return 3;  
+//		case 4:  return 4;  
+//		case 5:  return 5;  
+//		case 1:  return 6;  
+//		default: return 0;  
+//	}
+//}
+//void SVM_Generate2(float V_alpha, float V_beta) {
+//	
+//	Alpha = atan2f(V_alpha, V_beta);
+//	
+//	while (Alpha < 0) Alpha += TWOPI;
+//	uint8_t s = (uint8_t)(Alpha * INV_PION3);
+//	Alpha = Alpha - s * PION3;
+//	Sector = s + 1;
+//	
+////	T1 = (Vr/Vdc)*INV_SQRT3ON2*sinf(PION3 - Alpha);
+////	T2 = (Vr/Vdc)*INV_SQRT3ON2*sinf(Alpha);
+//	
+//	T1 = (Vr/Vdc) * SinR(PION3 - Alpha) * INV_SQRT3ON2;
+//	T2 = (Vr/Vdc) * SinR(Alpha) * INV_SQRT3ON2;
+//	T0 = (1 - T1 - T2)*0.5f;
+//	
+//	switch (Sector) {
+//		case 1:
+//			Ta = (T1 + T2 + T0);
+//			Tb = (T2 + T0);
+//			Tc = (T0);
+//			break;
+//		case 2:
+//			Ta = (T1 +  T0);
+//			Tb = (T1 + T2 + T0);
+//			Tc = (T0);
+//			break;
+//		case 3:
+//			Ta = (T0);
+//			Tb = (T1 + T2 + T0);
+//			Tc = (T2 + T0);
+//			break;
+//		case 4:
+//			Ta = (T0);
+//			Tb = (T1 + T0);
+//		 	Tc = (T1 + T2 + T0);
+//			break;
+//		case 5:
+//			Ta = (T2 + T0);
+//			Tb = (T0);
+//			Tc = (T1 + T2 + T0);
+//			break;
+//		case 6:
+//			Ta = (T1 + T2 + T0);
+//			Tb = (T0);
+//			Tc = (T1 + T0);
+//			break;
+//	}
+//	Ua = Ta*1599;
+//	Ub = Tb*1599;
+//	Uc = Tc*1599;
+//		
 
+//	TIM1->CCR1 = Ta*1599;
+//	TIM1->CCR2 = Tb*1599;
+//	TIM1->CCR3 = Tc*1599;
+//	
+//}
 
-//==========
+//#define LUT_SIZE 1024
+//uint16_t sin_LUT[LUT_SIZE];
 
 
 
 
 
+//void Compute_SVM_DutyCycles(uint8_t sector, uint32_t T_cw, uint32_t T_ccw) {
+//    uint32_t T_z = (7200 - T_cw - T_ccw) / 2;
+//    
+//    // Gán duty cycle cho t?ng kênh theo sector (B?ng 2 trong tài li?u)
+//    switch (sector) {
+//			case 0:
+//					TIM1->CCR1 = T_z;
+//					TIM1->CCR2 = T_z + T_cw;
+//					TIM1->CCR3 = T_z;
+//					break;
+//			case 1:
+//					TIM1->CCR1 = T_z + T_ccw;
+//					TIM1->CCR2 = T_z;
+//					TIM1->CCR3 =  T_z;
+//					break;
+//			case 2:
+//					TIM1->CCR1 =  T_z;
+//					TIM1->CCR2 = T_z;
+//					TIM1->CCR3 = T_z + T_cw;
+//					break;
+//			case 3:
+//					TIM1->CCR1 =  T_z;
+//					TIM1->CCR2 = T_z + T_ccw;
+//					TIM1->CCR3 = T_z;
+//					break;
+//			case 4:
+//					TIM1->CCR1 = T_z + T_cw;
+//					TIM1->CCR2 =  T_z;
+//					TIM1->CCR3 = T_z;
+//					break;
+//			case 5:
+//					TIM1->CCR1 = T_z;
+//					TIM1->CCR2 =  T_z;
+//					TIM1->CCR3 = T_z + T_ccw;
+//					break;
+//			default:
+//					// X? lý l?i n?u sector không h?p l?
+//					TIM1->CCR1 = 0;
+//					TIM1->CCR2 = 0;
+//					TIM1->CCR3 = 0;
+//					break;
+//		}
+//}
+
+////uint32_t gear_counter = 0; // Bi?n bánh rang l?n (30-bit)
+//#define GEAR_RATIO (1 << 30) // 2^30
+//uint32_t check1, check2, check3, check4;
+//   
+//	#define GEAR_RATIO (1 << 30)        // 2^30
+//	#define SECTOR_ENTRIES 1024         // S? di?m LUT/sector
+//	#define TOTAL_ENTRIES (6*SECTOR_ENTRIES) // 6 sectors × 1024
+
+////void Update_SVM_Vector(float frequency, float V_amplitude) {
+////     // Tính bu?c tang ?o j (dùng fixed-point)
+////    uint32_t j = (uint32_t)(frequency * 6144 / 5000 * (1 << 30)); 
+////    gear_counter += j; // Tích luy vào bánh rang l?n
+////    check1 = j;
+////    // L?y k = floor(j / 2^30) b?ng d?ch bit
+////    uint16_t k = (gear_counter >> 30); 
+////    gear_counter &= 0x3FFFFFFF; // Gi? l?i ph?n du (30 bit th?p)
+////    
+////    // Tính góc t? LUT
+////    uint16_t lut_index = k % 6144; // Index trong 6 sectors
+////    uint8_t sector = lut_index / 1024; // Sector 0-5
+////    uint16_t sector_index = lut_index % 1024; // Index trong sector
+////	
+////	uint32_t T_cw = ((uint32_t)(V_amplitude * sin_LUT[sector_index])) >> 19;
+////	uint32_t T_ccw = ((uint32_t)(V_amplitude * sin_LUT[LUT_SIZE - sector_index])) >> 19;
+
+////    
+////    // G?i hàm tính duty cycle
+////		Compute_SVM_DutyCycles(sector, T_cw, T_ccw);
+////}
+
+//void tinh_Valpha_Vbeta_Alpha(){
+//	Valpha = Va - Vb/2.0f - Vc/2.0f;
+//	Vbeta = (Vb - Vc)*SQRT3/2.0f;
+//	
+//	Vr = sqrtf(Valpha*Valpha + Vbeta*Vbeta);
+//	Alpha = atan2f(Vbeta, Valpha);
+//	
+//}
+
+//void FSector(){
+//	if(Alpha > 0 & Alpha <= PI/3){
+//		Sector = 1;
+//		
+//		T1 = (Vr/Vdc)*sinf(PI/3 - Alpha)*2/SQRT3;
+//		T2 = (Vr/Vdc)*sinf(Alpha)*2/SQRT3;
+//		T0 = 1 - T1 - T2;
+//		
+//	}
+//	else if(Alpha > PI/3 & Alpha <= 2*PI/3){
+//		Sector = 2;
+//		T1 = (Vr/Vdc)*sinf(2*PI/3 - Alpha)*2/SQRT3;
+//		T2 = (Vr/Vdc)*sinf(Alpha)*2/SQRT3;
+//		T0 = 1 - T1 - T2;
+//	}
+//	else if(Alpha > 2*PI/3 & Alpha <= PI){
+//		Sector = 3;
+//	}
+//	else if(Alpha > -PI & Alpha <= -2*PI/3){
+//		Sector = 4;
+//	}
+//	else if(Alpha > -2*PI/3 & Alpha <= -PI/3){
+//		Sector = 5;
+//	}
+//	else{
+//		Sector = 6;
+//	}
+//}
+
+
+////==========
 
 
 
-//=============
 
 
-float i;
 
-#define TWO_PI (2.0f * PI)
-#define SECTOR_ANGLE (PI / 3.0f)
-#define PWM_MAX 399.0f
-float Ta1 = 0.0f, Tb1 = 0.0f, Tc1 = 0.0f;
-float Vab = 0;
-float Vbc;
-float Vca;
 
-//===============================
- float angle = 0.0f, OMEGA = 2.0f*PI, DT = 0.00022225f;
+
+////=============
+
+
+//float i;
+
+//#define TWO_PI (2.0f * PI)
+//#define SECTOR_ANGLE (PI / 3.0f)
+//#define PWM_MAX 399.0f
+//float Ta1 = 0.0f, Tb1 = 0.0f, Tc1 = 0.0f;
+//float Vab = 0;
+//float Vbc;
+//float Vca;
+
+////===============================
+// float angle = 0.0f, OMEGA = 2.0f*PI, DT = 0.00022225f;
 void TIM2_IRQHandler(){
 	TIM2->SR &= ~(1<<0);
 //	GPIOA->ODR ^= (1<<11);
 	
 	
 	
-	float Valpha1 =  cos(angle);
-  float Vbeta1  =  sin(angle);
+//	float Valpha1 =  cos(angle);
+//  float Vbeta1  =  sin(angle);
 
-  SVM_Generate2(Valpha1, Vbeta1);  // dùng hàm c?a b?n
+//  SVM_Generate2(Valpha1, Vbeta1);  // dùng hàm c?a b?n
 
 
-	angle += DT;  // tích luy góc
-	if (angle >= 2 * TWOPI) angle = 0;
+//	angle += DT;  // tích luy góc
+//	if (angle >= 2 * TWOPI) angle = 0;
 
-}
-void TIM1_UP_IRQHandler(void)
-{
-  
-
-    TIM1->SR &= ~TIM_SR_UIF;
 }
 
 
 
 /* USER CODE END 0 */
-
+//uint32_t j;
 /**
   * @brief  The application entry point.
   * @retval int
   */
-int main(void)
-{
+//
+#define PWM_PERIOD 7200
+#define M_PI 3.141592653f
 
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
-  SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  /* USER CODE BEGIN 2 */
-	
+void Init_TIM(void){
 	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN;
 	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
-	
-	
+
 	//======= GPIO ==========
 	GPIOA->CRH = 0x0000;
 	GPIOB->CRH |= (0b1011<<((13-8)*4)) | (0b1011<<((14-8)*4)) | (0b1011<<((15-8)*4));
@@ -4057,10 +4106,10 @@ int main(void)
 	TIM1->CCMR1 |= (0b110<<4) | TIM_CCMR1_OC1CE | TIM_CCMR1_OC1PE | (0b110<<12) | TIM_CCMR1_OC2CE | TIM_CCMR1_OC2PE;	// PWM mode 1, bit 3 Y/N ok
 	TIM1->CCMR2 |= (0b110<<4) | TIM_CCMR2_OC3CE | TIM_CCMR2_OC3PE;
 	TIM1->PSC = 0;
-	TIM1->ARR = 1599;
-	TIM1->CCR1 = 120;
-	TIM1->CCR3 = 150;
-	TIM1->CCR2 = 200;
+	TIM1->ARR = 7200;
+	TIM1->CCR1 = 3600;
+	TIM1->CCR3 = 3600;
+	TIM1->CCR2 = 3600;
 	TIM1->CCER |= TIM_CCER_CC1E | TIM_CCER_CC1NE; // CH1 + CH1N
 	TIM1->CCER |= TIM_CCER_CC2E | TIM_CCER_CC2NE; // CH2 + CH2N
 	TIM1->CCER |= TIM_CCER_CC3E | TIM_CCER_CC3NE; // CH3 + CH3N
@@ -4084,55 +4133,178 @@ int main(void)
 //	TIM2->DIER |= TIM_DIER_UDE;
 //	NVIC->ISER[0] |= (1<<28);
 	
-	RCC->APB1ENR |= (1<<0);
-	TIM2->PSC = 63;
-	TIM2->ARR = 249;
-	TIM2->CR1 |= (1<<0);
-	TIM2->DIER |= (1<<0);
-	NVIC->ISER[0] |= (1<<28);
+//	RCC->APB1ENR |= (1<<0);
+//	TIM2->PSC = 63;
+//	TIM2->ARR = 249;
+//	TIM2->CR1 |= (1<<0);
+//	TIM2->DIER |= (1<<0);
+//	NVIC->ISER[0] |= (1<<28);
+}
+//
+uint16_t s_lookup[1024];
+uint16_t modulation_index; // gia tri tu 0-65535
+uint16_t angle_index;      // index tu 0–1023
+uint16_t ccr1, ccr2, ccr3;
+//uint8_t current_sector;    // gia tri tu 0–5
+
+uint64_t gear_counter = 0;       // Bien tich luy banh rang lon (64-bit)
+#define GEAR_TEETH (1 << 30)     // So rang banh lon = 2^30
+#define LUT_SIZE 6144            // Tong diem LUT (6 sectors)
+uint16_t check1;
 
 
-	            
+void init_sin_table(void) {
+	for (int i = 0; i < 1024; i++) {
+		s_lookup[i] = (uint16_t)(57600 * sinf((float)i * M_PI / 3069.0f)); // M_PI / (6 × 1024)
+	}
+}
+//
+void update_sector_and_index(float Theta){
+//	if (Theta >= 2.0f * M_PI) Theta = 0;
+//	current_sector = (uint8_t)(Theta / (M_PI / 3.0f));  // moi sector chiem 60 do
+//	float phi = Theta - current_sector * (M_PI / 3.0f); // goc noi bo trong sector
+//	angle_index = (uint16_t)(phi * 3069.0f / M_PI);     // scale theo cong thuc bang
+}
+//
+uint16_t Update_Angle(float target_freq) {
+	// 1. Tinh so rang can dich tren banh lon
+	// Cong thuc: j = (target_freq * LUT_SIZE / PWM_FREQ) * GEAR_TEETH
+	uint64_t j = (uint64_t)((target_freq * GEAR_TEETH * LUT_SIZE) / 5000.0f);
+
+	
+	// 2. Tich luy vao gear_couter (banh lon quay)
+	gear_counter += j;
+	
+	// 3. Tinh so rang dich thuc te tren banh nho (k = j / GEAR_TEETH)
+	uint64_t k = gear_counter >> 30;  // D?ch 30 bit = chia cho 2^30
+	
+//	// 4. Giu lai phan du cho lan sau
+//	gear_counter &= (GEAR_TEETH - 1); // Giu 30 bit thap
+	
+	// 5. Lay index trong LUT (0-6143)
+	uint16_t lut_index = k % LUT_SIZE;
+	
+	return lut_index;
+}
+
+//
+void SVM_Calc(uint16_t V_index, float frequency, uint16_t *ccr1, uint16_t *ccr2, uint16_t *ccr3) {
+
+	// 1. C?p nh?t góc quay dùng Coaxial Gears
+	uint16_t idx = Update_Angle(frequency);
+	
+	// 2. Xác d?nh sector và index trong sector
+	uint8_t sector = idx / 1024;       // 6 sectors (0-5)
+	uint16_t sector_idx = idx % 1024;  // 1024 diem/sector
+	
+	uint32_t m_i = V_index;
+	uint32_t sin_phi = s_lookup[sector_idx];
+	uint32_t sin_60_minus_phi = s_lookup[1023 - sector_idx];
+
+	uint32_t Tccw = (m_i * sin_60_minus_phi) >> 19; // chia 524288
+	uint32_t Tcw = (m_i * sin_phi) >> 19;
+	uint32_t Tz = (PWM_PERIOD - Tcw - Tccw) >> 1;
+
+//  switch (sector) {
+//		case 0: *ccr1 = Tz; *ccr2 = Tz + Tcw; *ccr3 = PWM_PERIOD - Tz; break;
+//		case 1: *ccr1 = Tz + Tccw; *ccr2 = Tz; *ccr3 = PWM_PERIOD - Tz; break;
+//		case 2: *ccr1 = PWM_PERIOD - Tz; *ccr2 = Tz; *ccr3 = Tz + Tcw; break;
+//		case 3: *ccr1 = PWM_PERIOD - Tz; *ccr2 = Tz + Tccw; *ccr3 = Tz; break;
+//		case 4: *ccr1 = Tz + Tcw; *ccr2 = PWM_PERIOD - Tz; *ccr3 = Tz; break;
+//		case 5: *ccr1 = Tz; *ccr2 = PWM_PERIOD - Tz; *ccr3 = Tz + Tccw; break;
+//	}
+	switch (sector) {
+		case 0:
+			*ccr1 = (Tccw + Tcw + Tz);
+			*ccr2 = (Tcw + Tz);
+			*ccr3 = (Tz);
+			break;
+		case 1:
+			*ccr1 = (Tccw +  Tz);
+			*ccr2 = (Tccw + Tcw + Tz);
+			*ccr3 = (Tz);
+			break;
+		case 2:
+			*ccr1 = (Tz);
+			*ccr2 = (Tccw + Tcw + Tz);
+			*ccr3 = (Tcw + Tz);
+			break;
+		case 3:
+			*ccr1 = (Tz);
+			*ccr2 = (Tccw + Tz);
+		 	*ccr3 = (Tccw + Tcw + Tz);
+			break;
+		case 4:
+			*ccr1 = (Tcw + Tz);
+			*ccr2 = (Tz);
+			*ccr3 = (Tccw + Tcw + Tz);
+			break;
+		case 5:
+			*ccr1 = (Tccw + Tcw + Tz);
+			*ccr2 = (Tz);
+			*ccr3 = (Tccw + Tz);
+			break;
+	}
+}
+
+//
+
+
+uint16_t V_F = 5000;
+float tanso= 1.0f;
+//
+
+
+void TIM1_UP_IRQHandler(void)
+{
+  TIM1->SR &= ~TIM_SR_UIF;
+	SVM_Calc(V_F, tanso, &ccr1, &ccr2, &ccr3); 
+	TIM1->CCR1 = ccr1;
+	TIM1->CCR2 = ccr2;
+	TIM1->CCR3 = ccr3;
+//	check1 = Update_Angle(50.0f);
+}
+
+
+
+
+int main(void)
+{
+
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  /* USER CODE BEGIN 2 */
+	Init_TIM();
 
   /* USER CODE END 2 */
 
-
+	init_sin_table();
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-//		GPIOA->ODR ^= (1<<11);
-//		float Valpha1 = Vr * cosf(angle);
-//    float Vbeta1  = Vr * sinf(angle);
 
-//    SVM_Generate2(Valpha1, Vbeta1);  // dùng hàm c?a b?n
+	while (1) {
+		GPIOA->ODR ^= (1<<11);
+		SVM_Calc(5000, 1.7, &ccr1, &ccr2, &ccr3); 
+		TIM1->CCR1 = ccr1;
+		TIM1->CCR2 = ccr2;
+		TIM1->CCR3 = ccr3;
+		GPIOA->ODR ^= (1<<11);
+		HAL_Delay(100);
+	}
 
-//    angle += OMEGA * DT;  // tích luy góc
-////    
-//		GPIOA->ODR ^= (1<<11);
-	
-//		HAL_Delay(1);
-
-  
-//		TIM1->CCR1 = Ua;
-//		TIM1->CCR3 = Ua;
-//		TIM1->CCR2 = Ua;
-
-		
-//		Va = Sintable[456];
-		
-		
-		
-		
-		
-		
-
-		
-		
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-  }
   /* USER CODE END 3 */
 }
 
